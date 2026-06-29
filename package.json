@@ -27,6 +27,7 @@
     "nist",
     "cbom"
   ],
+  "files": ["dist"],
   "license": "MIT",
   "repository": {
     "type": "git",
