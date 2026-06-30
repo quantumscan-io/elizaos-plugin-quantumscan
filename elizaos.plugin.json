@@ -1,0 +1,38 @@
+{
+  "id": "quantumscan",
+  "name": "QuantumScan PQC Scanner",
+  "description": "Post-quantum cryptography (PQC) vulnerability scanner for GitHub, GitLab, and Bitbucket repositories. Detects ECDSA, RSA, AES-128, and other quantum-vulnerable algorithms. Returns EIP-7789 CBOM manifests aligned to NIST FIPS 203/204/205 migration targets.",
+  "version": "1.0.1",
+  "kind": "skill",
+
+  "optionalSecrets": ["QUANTUMSCAN_API_KEY", "QUANTUMSCAN_API_URL"],
+
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "QuantumScan API key for authenticated scans (optional — free scans work without it)"
+      },
+      "apiUrl": {
+        "type": "string",
+        "format": "uri",
+        "description": "Custom QuantumScan API base URL (default: https://quantumscan.io)"
+      }
+    }
+  },
+
+  "uiHints": {
+    "apiKey": {
+      "label": "QuantumScan API Key",
+      "type": "password",
+      "sensitive": true,
+      "placeholder": "qs_..."
+    },
+    "apiUrl": {
+      "label": "API Base URL",
+      "type": "text",
+      "placeholder": "https://quantumscan.io"
+    }
+  }
+}

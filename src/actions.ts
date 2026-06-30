@@ -1,4 +1,11 @@
-import type { Action, IAgentRuntime, Memory, State, HandlerCallback } from "@elizaos/core";
+import type {
+  Action,
+  IAgentRuntime,
+  Memory,
+  State,
+  HandlerCallback,
+  HandlerOptions,
+} from "@elizaos/core";
 
 const API_BASE = process.env.QUANTUMSCAN_API_URL ?? "https://quantumscan.io";
 const API_KEY = process.env.QUANTUMSCAN_API_KEY ?? "";
@@ -28,20 +35,20 @@ export const scanRepositoryAction: Action = {
     "PQC_AUDIT",
   ],
   validate: async (_runtime: IAgentRuntime, message: Memory) => {
-    const text = message.content.text ?? "";
+    const text = (message.content.text as string | undefined) ?? "";
     return REPO_URL_RE.test(text);
   },
   handler: async (
     _runtime: IAgentRuntime,
     message: Memory,
     _state: State | undefined,
-    _options: unknown,
+    _options: HandlerOptions | undefined,
     callback: HandlerCallback | undefined,
   ) => {
-    const text = message.content.text ?? "";
+    const text = (message.content.text as string | undefined) ?? "";
     const match = text.match(REPO_URL_RE);
     if (!match) {
-      callback?.({ text: "Could not find a valid repository URL in the message." });
+      await callback?.({ text: "Could not find a valid repository URL in the message." });
       return;
     }
 
@@ -69,25 +76,24 @@ export const scanRepositoryAction: Action = {
       };
 
       if (data.error) {
-        callback?.({ text: `Scan error: ${data.error.message}` });
+        await callback?.({ text: `Scan error: ${data.error.message}` });
         return;
       }
 
       const scanId = data.result?.id ?? "";
       const scanUrl = data.result?.metadata?.scanUrl ?? `${API_BASE}/scan/${scanId}`;
 
-      callback?.({
+      await callback?.({
         text:
           `PQC scan submitted for ${repoUrl}.\n` +
           `Scan ID: \`${scanId}\`\n` +
           `Results in ~60 seconds. Use GET_SCAN_RESULT with this ID, or view: ${scanUrl}`,
-        action: "SCAN_REPOSITORY",
+        actions: ["SCAN_REPOSITORY"],
       });
 
-      // Store scan ID in message metadata for downstream use
       message.content.scanId = scanId;
     } catch (e) {
-      callback?.({ text: `Failed to submit scan: ${e instanceof Error ? e.message : String(e)}` });
+      await callback?.({ text: `Failed to submit scan: ${e instanceof Error ? e.message : String(e)}` });
     }
   },
   examples: [
@@ -100,7 +106,7 @@ export const scanRepositoryAction: Action = {
         name: "agent",
         content: {
           text: "PQC scan submitted for https://github.com/uniswap/v3-core.\nScan ID: `abc-123`\nResults in ~60 seconds.",
-          action: "SCAN_REPOSITORY",
+          actions: ["SCAN_REPOSITORY"],
         },
       },
     ],
@@ -113,7 +119,7 @@ export const scanRepositoryAction: Action = {
         name: "agent",
         content: {
           text: "PQC scan submitted for https://github.com/aave/aave-v3-core.\nScan ID: `def-456`\nResults in ~60 seconds.",
-          action: "SCAN_REPOSITORY",
+          actions: ["SCAN_REPOSITORY"],
         },
       },
     ],
@@ -127,7 +133,7 @@ export const getScanResultAction: Action = {
   description:
     "Retrieve the result of a previously submitted QuantumScan. " +
     "Provide the scan ID returned by SCAN_REPOSITORY. " +
-    "Returns quantum risk score (0–100), list of vulnerable primitives, and CBOM manifest.",
+    "Returns quantum risk score (0-100), list of vulnerable primitives, and CBOM manifest.",
   similes: [
     "GET_SCAN",
     "CHECK_SCAN",
@@ -136,8 +142,7 @@ export const getScanResultAction: Action = {
     "GET_PQC_REPORT",
   ],
   validate: async (_runtime: IAgentRuntime, message: Memory) => {
-    const text = message.content.text ?? "";
-    // Accept if message contains a UUID or mentions scan result
+    const text = (message.content.text as string | undefined) ?? "";
     return /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(text) ||
       /scan.?result|scan.?status|get.?scan/i.test(text);
   },
@@ -145,17 +150,15 @@ export const getScanResultAction: Action = {
     _runtime: IAgentRuntime,
     message: Memory,
     _state: State | undefined,
-    _options: unknown,
+    _options: HandlerOptions | undefined,
     callback: HandlerCallback | undefined,
   ) => {
-    const text = message.content.text ?? "";
+    const text = (message.content.text as string | undefined) ?? "";
     const uuidMatch = text.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
-
-    // Also check if a scan ID was stored in message metadata
     const scanId = uuidMatch?.[0] ?? (message.content.scanId as string | undefined);
 
     if (!scanId) {
-      callback?.({ text: "Please provide a scan ID (UUID format) to retrieve the result." });
+      await callback?.({ text: "Please provide a scan ID (UUID format) to retrieve the result." });
       return;
     }
 
@@ -183,16 +186,16 @@ export const getScanResultAction: Action = {
       };
 
       if (data.error) {
-        callback?.({ text: `Error: ${data.error.message}` });
+        await callback?.({ text: `Error: ${data.error.message}` });
         return;
       }
 
       const task = data.result!;
-      const state = task.status.state;
+      const scanState = task.status.state;
 
-      if (state !== "completed") {
-        callback?.({
-          text: `Scan status: **${state}**\nScan ID: \`${scanId}\`\n${state === "failed" ? `Error: ${task.error}` : "Check back in 30–60 seconds."}`,
+      if (scanState !== "completed") {
+        await callback?.({
+          text: `Scan status: **${scanState}**\nScan ID: \`${scanId}\`\n${scanState === "failed" ? `Error: ${task.error}` : "Check back in 30-60 seconds."}`,
         });
         return;
       }
@@ -201,12 +204,12 @@ export const getScanResultAction: Action = {
       const summary = task.artifacts?.find((a) => a.name === "scan-summary");
       const summaryText = summary?.parts?.find((p) => p.type === "text")?.text ?? "";
 
-      callback?.({
+      await callback?.({
         text: `**PQC Scan Complete**\n\n${summaryText}\n\nFull report: ${meta.scanUrl ?? `${API_BASE}/scan/${scanId}`}`,
-        action: "GET_SCAN_RESULT",
+        actions: ["GET_SCAN_RESULT"],
       });
     } catch (e) {
-      callback?.({ text: `Failed to get scan result: ${e instanceof Error ? e.message : String(e)}` });
+      await callback?.({ text: `Failed to get scan result: ${e instanceof Error ? e.message : String(e)}` });
     }
   },
   examples: [
@@ -219,7 +222,7 @@ export const getScanResultAction: Action = {
         name: "agent",
         content: {
           text: "**PQC Scan Complete**\n\nRepository: ...\nRisk Score: 72/100\nVulnerable primitives: 3/4",
-          action: "GET_SCAN_RESULT",
+          actions: ["GET_SCAN_RESULT"],
         },
       },
     ],
@@ -231,7 +234,7 @@ export const getScanResultAction: Action = {
 export const checkPqcRiskAction: Action = {
   name: "CHECK_PQC_RISK",
   description:
-    "Instant check — is a specific cryptographic algorithm quantum-vulnerable? " +
+    "Instant check: is a specific cryptographic algorithm quantum-vulnerable? " +
     "No scan needed, responds immediately. " +
     "Useful to quickly assess risk before interacting with a protocol.",
   similes: [
@@ -242,18 +245,17 @@ export const checkPqcRiskAction: Action = {
     "QUANTUM_RISK",
   ],
   validate: async (_runtime: IAgentRuntime, message: Memory) => {
-    const text = message.content.text ?? "";
+    const text = (message.content.text as string | undefined) ?? "";
     return /ecdsa|rsa|aes|sha|elliptic|quantum.?safe|pqc.?check|ml-dsa|ml-kem/i.test(text);
   },
   handler: async (
     _runtime: IAgentRuntime,
     message: Memory,
     _state: State | undefined,
-    _options: unknown,
+    _options: HandlerOptions | undefined,
     callback: HandlerCallback | undefined,
   ) => {
-    const text = message.content.text ?? "";
-    // Extract algorithm mentions
+    const text = (message.content.text as string | undefined) ?? "";
     const algoMatches = text.match(
       /(?:ECDSA|RSA(?:-\d+)?|AES(?:-\d+)?|SHA(?:-\d+)?|Ed25519|X25519|DH|ECDH|ML-DSA|ML-KEM|SLH-DSA|BLS12-381|DSA)/gi,
     ) ?? [];
@@ -261,7 +263,7 @@ export const checkPqcRiskAction: Action = {
     const algorithms = [...new Set(algoMatches)];
 
     if (algorithms.length === 0) {
-      callback?.({ text: "No recognized algorithm names found. Try mentioning ECDSA, RSA, AES-128, etc." });
+      await callback?.({ text: "No recognized algorithm names found. Try mentioning ECDSA, RSA, AES-128, etc." });
       return;
     }
 
@@ -282,10 +284,10 @@ export const checkPqcRiskAction: Action = {
         error?: { message: string };
       };
 
-      const text = data.result?.content?.find((c) => c.type === "text")?.text ?? "No data.";
-      callback?.({ text: `**PQC Risk Assessment**\n\n${text}`, action: "CHECK_PQC_RISK" });
+      const resultText = data.result?.content?.find((c) => c.type === "text")?.text ?? "No data.";
+      await callback?.({ text: `**PQC Risk Assessment**\n\n${resultText}`, actions: ["CHECK_PQC_RISK"] });
     } catch (e) {
-      callback?.({ text: `Check failed: ${e instanceof Error ? e.message : String(e)}` });
+      await callback?.({ text: `Check failed: ${e instanceof Error ? e.message : String(e)}` });
     }
   },
   examples: [
@@ -297,8 +299,8 @@ export const checkPqcRiskAction: Action = {
       {
         name: "agent",
         content: {
-          text: "**PQC Risk Assessment**\n\nECDSA: VULNERABLE → ML-DSA-65 (NIST FIPS 204)",
-          action: "CHECK_PQC_RISK",
+          text: "**PQC Risk Assessment**\n\nECDSA: VULNERABLE to Shor's algorithm. Migration target: ML-DSA-65 (NIST FIPS 204)",
+          actions: ["CHECK_PQC_RISK"],
         },
       },
     ],

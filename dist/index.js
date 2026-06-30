@@ -25,3 +25,4 @@ exports.quantumscanPlugin = {
 };
 exports.default = exports.quantumscanPlugin;
 __exportStar(require("./actions"), exports);
+//# sourceMappingURL=index.js.map

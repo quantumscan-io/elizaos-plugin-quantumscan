@@ -1,7 +1,7 @@
 {
   "name": "elizaos-plugin-quantumscan",
-  "version": "1.0.0",
-  "description": "ElizaOS plugin — post-quantum cryptography vulnerability scanning for blockchain AI agents",
+  "version": "1.0.1",
+  "description": "ElizaOS plugin — post-quantum cryptography vulnerability scanning for GitHub, GitLab, and Bitbucket repositories",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -9,7 +9,7 @@
     "dev": "tsc --watch"
   },
   "peerDependencies": {
-    "@elizaos/core": ">=0.1.0"
+    "@elizaos/core": ">=1.0.0"
   },
   "devDependencies": {
     "@elizaos/core": "^1.7.2",
@@ -22,14 +22,18 @@
     "plugin",
     "quantumscan",
     "pqc",
+    "post-quantum",
     "cryptography",
     "blockchain",
     "security",
     "nist",
-    "cbom"
+    "cbom",
+    "vulnerability-scanner"
   ],
   "files": [
-    "dist"
+    "dist",
+    "elizaos.plugin.json",
+    "README.md"
   ],
   "license": "MIT",
   "repository": {
