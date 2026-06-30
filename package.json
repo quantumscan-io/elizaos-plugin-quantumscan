@@ -1,6 +1,6 @@
 {
   "name": "elizaos-plugin-quantumscan",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "ElizaOS plugin — post-quantum cryptography vulnerability scanning for GitHub, GitLab, and Bitbucket repositories",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

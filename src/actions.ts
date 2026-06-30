@@ -7,6 +7,9 @@ import type {
   HandlerOptions,
 } from "@elizaos/core";
 
+const CONTRACT_RE = /\b(0x[0-9a-fA-F]{40})\b/;
+const NETWORK_RE = /\b(?:network|chain)[:\s]+(\d+)/i;
+
 const API_BASE = process.env.QUANTUMSCAN_API_URL ?? "https://quantumscan.io";
 const API_KEY = process.env.QUANTUMSCAN_API_KEY ?? "";
 
@@ -223,6 +226,107 @@ export const getScanResultAction: Action = {
         content: {
           text: "**PQC Scan Complete**\n\nRepository: ...\nRisk Score: 72/100\nVulnerable primitives: 3/4",
           actions: ["GET_SCAN_RESULT"],
+        },
+      },
+    ],
+  ],
+};
+
+// ── SCAN_CONTRACT ────────────────────────────────────────────────────────────
+
+export const scanContractAction: Action = {
+  name: "SCAN_CONTRACT",
+  description:
+    "Scan a verified on-chain smart contract for quantum-vulnerable cryptography AND today's fraud patterns " +
+    "(rug pulls, honeypots, uncapped mints, reentrancy) BEFORE signing or interacting. " +
+    "Accepts any Ethereum-format contract address (0x...). " +
+    "Returns risk score 0-100 and a clear SAFE / CAUTION / BLOCK recommendation. Synchronous.",
+  similes: [
+    "CHECK_CONTRACT",
+    "AUDIT_CONTRACT",
+    "SCAN_SMART_CONTRACT",
+    "PRE_TRANSACTION_CHECK",
+    "CONTRACT_RISK",
+    "CHECK_BEFORE_SIGN",
+    "VERIFY_CONTRACT",
+    "PQC_CONTRACT",
+  ],
+  validate: async (_runtime: IAgentRuntime, message: Memory) => {
+    const text = (message.content.text as string | undefined) ?? "";
+    return CONTRACT_RE.test(text);
+  },
+  handler: async (
+    _runtime: IAgentRuntime,
+    message: Memory,
+    _state: State | undefined,
+    _options: HandlerOptions | undefined,
+    callback: HandlerCallback | undefined,
+  ) => {
+    const text = (message.content.text as string | undefined) ?? "";
+    const addressMatch = text.match(CONTRACT_RE);
+    if (!addressMatch) {
+      await callback?.({ text: "No valid contract address (0x...) found in the message." });
+      return;
+    }
+    const address = addressMatch[1];
+    const networkMatch = text.match(NETWORK_RE);
+    const network = networkMatch ? parseInt(networkMatch[1], 10) : 1;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/mcp`, {
+        method: "POST",
+        headers: apiHeaders(),
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 4,
+          method: "tools/call",
+          params: { name: "scan_contract", arguments: { contract_address: address, network } },
+        }),
+      });
+
+      const data = (await res.json()) as {
+        result?: { content: { type: string; text?: string }[] };
+        error?: { message: string };
+      };
+
+      if (data.error) {
+        await callback?.({ text: `Scan error: ${data.error.message}` });
+        return;
+      }
+
+      const resultText = data.result?.content?.find((c) => c.type === "text")?.text ?? "No result.";
+      await callback?.({
+        text: `**Pre-Transaction Security Scan**\n\n${resultText}`,
+        actions: ["SCAN_CONTRACT"],
+      });
+    } catch (e) {
+      await callback?.({ text: `Contract scan failed: ${e instanceof Error ? e.message : String(e)}` });
+    }
+  },
+  examples: [
+    [
+      {
+        name: "user",
+        content: { text: "Before I interact with 0xdAC17F958D2ee523a2206206994597C13D831ec7, is it quantum-safe?" },
+      },
+      {
+        name: "agent",
+        content: {
+          text: "**Pre-Transaction Security Scan**\n\nContract: 0xdAC17F958D2ee523a2206206994597C13D831ec7\nNetwork: Ethereum Mainnet\nRisk Score: 45/100\n→ PROCEED WITH CAUTION",
+          actions: ["SCAN_CONTRACT"],
+        },
+      },
+    ],
+    [
+      {
+        name: "user",
+        content: { text: "Scan 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 for fraud patterns before I sign" },
+      },
+      {
+        name: "agent",
+        content: {
+          text: "**Pre-Transaction Security Scan**\n\nContract: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\nRisk Score: 12/100\n→ SAFE TO INTERACT",
+          actions: ["SCAN_CONTRACT"],
         },
       },
     ],

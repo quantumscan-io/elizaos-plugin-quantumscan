@@ -18,10 +18,10 @@ exports.quantumscanPlugin = void 0;
 const actions_1 = require("./actions");
 exports.quantumscanPlugin = {
     name: "quantumscan",
-    description: "Post-quantum cryptography (PQC) vulnerability scanner for GitHub, GitLab, and Bitbucket repositories. " +
-        "Detects quantum-vulnerable algorithms (ECDSA, RSA, DH, AES-128, etc.), returns EIP-7789 CBOM manifests " +
-        "aligned to NIST FIPS 203/204/205 migration targets.",
-    actions: [actions_1.scanRepositoryAction, actions_1.getScanResultAction, actions_1.checkPqcRiskAction],
+    description: "Post-quantum cryptography (PQC) vulnerability scanner for GitHub, GitLab, Bitbucket repositories " +
+        "and on-chain smart contracts. Detects quantum-vulnerable algorithms (ECDSA, RSA, DH, AES-128, etc.) " +
+        "and fraud patterns, returns EIP-7789 CBOM manifests aligned to NIST FIPS 203/204/205 migration targets.",
+    actions: [actions_1.scanRepositoryAction, actions_1.getScanResultAction, actions_1.checkPqcRiskAction, actions_1.scanContractAction],
 };
 exports.default = exports.quantumscanPlugin;
 __exportStar(require("./actions"), exports);
