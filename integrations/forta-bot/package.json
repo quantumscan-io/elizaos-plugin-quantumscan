@@ -1,0 +1,31 @@
+{
+  "name": "quantumscan-forta-bot",
+  "displayName": "QuantumScan PQC Security Bot",
+  "version": "1.0.0",
+  "description": "Monitors Ethereum for quantum-vulnerable cryptography (ECDSA/ecrecover) in smart contracts. Powered by QuantumScan.io",
+  "longDescription": "Detects smart contracts using quantum-vulnerable cryptographic patterns (ECDSA signature recovery via ecrecover, secp256k1 operations) that will be broken by sufficiently powerful quantum computers. Alerts on new contract deployments and monitors high-value DeFi protocols. Part of QuantumScan's blockchain PQC security ecosystem.",
+  "chainIds": [1, 137, 42161, 10],
+  "scripts": {
+    "start": "npx forta-agent@latest start",
+    "tx": "npx forta-agent@latest run --tx",
+    "block": "npx forta-agent@latest run --block",
+    "range": "npx forta-agent@latest run --range",
+    "file": "npx forta-agent@latest run --file",
+    "publish": "npx forta-agent@latest publish",
+    "test": "jest"
+  },
+  "dependencies": {
+    "forta-agent": "^0.1.48"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gaiabio12-design/elizaos-plugin-quantumscan"
+  },
+  "forta": {
+    "scanEverything": false,
+    "shards": 1
+  }
+}

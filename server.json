@@ -1,0 +1,31 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.gaiabio12-design/quantumscan",
+  "description": "Post-quantum cryptography (PQC) vulnerability scanner for repos and smart contracts.",
+  "repository": {
+    "url": "https://github.com/gaiabio12-design/elizaos-plugin-quantumscan",
+    "source": "github"
+  },
+  "version": "1.0.4",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "elizaos-plugin-quantumscan",
+      "version": "1.0.4",
+      "transport": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "mcp-remote", "https://quantumscan.io/api/mcp"]
+      },
+      "environmentVariables": [
+        {
+          "name": "QUANTUMSCAN_API_KEY",
+          "description": "Optional API key for unlimited scans. Free tier: 10 scans/day without key. Get one at quantumscan.io",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

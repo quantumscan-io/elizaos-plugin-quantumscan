@@ -1,0 +1,16 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      apiKey:
+        type: string
+        title: API Key
+        description: "Optional QuantumScan API key. Free tier: 10 scans/day without key. Get one at quantumscan.io"
+    required: []
+  commandFunction: |-
+    (config) => ({
+      command: "npx",
+      args: ["-y", "mcp-remote", "https://quantumscan.io/api/mcp"],
+      env: config.apiKey ? { QUANTUMSCAN_API_KEY: config.apiKey } : {}
+    })

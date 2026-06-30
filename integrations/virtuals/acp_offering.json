@@ -1,0 +1,36 @@
+{
+  "name": "quantum_vulnerability_scan",
+  "description": "Scan any GitHub repository or smart contract for post-quantum cryptography (PQC) vulnerabilities. Identifies ECDSA, RSA, AES-128, secp256k1 patterns vulnerable to quantum computers. Returns risk score 0-100, affected files, and NIST FIPS 203/204/205 migration recommendations.",
+  "price": 0.05,
+  "currency": "VIRTUAL",
+  "endpoint": "https://quantumscan.io/api/mcp",
+  "schema": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "repoUrl": {
+          "type": "string",
+          "description": "GitHub/GitLab repository URL or smart contract address (0x...)"
+        },
+        "scanType": {
+          "type": "string",
+          "enum": ["repository", "contract", "algorithm"],
+          "description": "Type of scan to perform"
+        }
+      },
+      "required": ["repoUrl", "scanType"]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "riskScore": { "type": "number", "description": "0-100, higher = more vulnerable" },
+        "vulnerableAlgorithms": { "type": "array", "items": { "type": "string" } },
+        "recommendations": { "type": "array", "items": { "type": "string" } },
+        "reportUrl": { "type": "string" }
+      }
+    }
+  },
+  "tags": ["security", "blockchain", "pqc", "quantum", "cryptography", "audit"],
+  "github": "https://github.com/gaiabio12-design/elizaos-plugin-quantumscan",
+  "website": "https://quantumscan.io"
+}
