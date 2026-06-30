@@ -12,7 +12,8 @@
     "@elizaos/core": ">=0.1.0"
   },
   "devDependencies": {
-    "@elizaos/core": "^0.1.9",
+    "@elizaos/core": "^1.7.2",
+    "@types/node": "^26.0.1",
     "typescript": "^5.4.0"
   },
   "keywords": [
@@ -27,7 +28,9 @@
     "nist",
     "cbom"
   ],
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

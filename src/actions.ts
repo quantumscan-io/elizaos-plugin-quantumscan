@@ -93,11 +93,11 @@ export const scanRepositoryAction: Action = {
   examples: [
     [
       {
-        user: "user",
+        name: "user",
         content: { text: "Can you scan https://github.com/uniswap/v3-core for quantum vulnerabilities?" },
       },
       {
-        user: "agent",
+        name: "agent",
         content: {
           text: "PQC scan submitted for https://github.com/uniswap/v3-core.\nScan ID: `abc-123`\nResults in ~60 seconds.",
           action: "SCAN_REPOSITORY",
@@ -106,11 +106,11 @@ export const scanRepositoryAction: Action = {
     ],
     [
       {
-        user: "user",
+        name: "user",
         content: { text: "Is github.com/aave/aave-v3-core quantum-safe?" },
       },
       {
-        user: "agent",
+        name: "agent",
         content: {
           text: "PQC scan submitted for https://github.com/aave/aave-v3-core.\nScan ID: `def-456`\nResults in ~60 seconds.",
           action: "SCAN_REPOSITORY",
@@ -212,11 +212,11 @@ export const getScanResultAction: Action = {
   examples: [
     [
       {
-        user: "user",
+        name: "user",
         content: { text: "Get result for scan 421842e1-e9ec-431f-91e7-569deeb2e224" },
       },
       {
-        user: "agent",
+        name: "agent",
         content: {
           text: "**PQC Scan Complete**\n\nRepository: ...\nRisk Score: 72/100\nVulnerable primitives: 3/4",
           action: "GET_SCAN_RESULT",
@@ -291,11 +291,11 @@ export const checkPqcRiskAction: Action = {
   examples: [
     [
       {
-        user: "user",
+        name: "user",
         content: { text: "Is ECDSA quantum safe?" },
       },
       {
-        user: "agent",
+        name: "agent",
         content: {
           text: "**PQC Risk Assessment**\n\nECDSA: VULNERABLE → ML-DSA-65 (NIST FIPS 204)",
           action: "CHECK_PQC_RISK",
