@@ -1,0 +1,11 @@
+{
+  "schedule": "0 */30 * * * *",
+  "apiUrl": "https://quantumscan.io/api/agent/check-pqc-risk",
+  "algorithms": ["ECDSA", "secp256k1", "RSA-2048"],
+  "evms": [
+    {
+      "chainSelectorName": "ethereum-testnet-sepolia-base-1",
+      "contractAddress": "0x0000000000000000000000000000000000000000"
+    }
+  ]
+}
